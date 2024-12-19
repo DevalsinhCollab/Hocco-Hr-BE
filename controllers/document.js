@@ -146,7 +146,7 @@ exports.createSignAgreement = async (req, res) => {
 
 exports.getDocuments = async (req, res) => {
     const { userId } = req
-    const { page = 0, pageSize = 10, signStatus, status, employee, search } = req.query;
+    const { page = 0, pageSize = 10, signStatus, status, employee, search, signType } = req.query;
     const skip = page * pageSize;
 
     const userData = await UserSchema.findById(userId)
@@ -166,6 +166,10 @@ exports.getDocuments = async (req, res) => {
 
     if (status) {
         findObject.status = status
+    }
+
+    if(signType){
+        findObject.signType = signType
     }
 
     try {

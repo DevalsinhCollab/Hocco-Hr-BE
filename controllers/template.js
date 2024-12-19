@@ -1,11 +1,7 @@
 const TemplateSchema = require("../models/template");
 const mammoth = require("mammoth");
-const DFMasterSchema = require("../models/df_master");
-const moment = require("moment");
 const { PDFDocument } = require("pdf-lib");
 const pdf = require("html-pdf");
-const Customer = require("../models/customer");
-const EmployeeSchema = require("../models/employee")
 
 exports.createTemplate = async (req, res) => {
     try {
@@ -63,12 +59,13 @@ exports.findVarFromTemplateById = async (req, res) => {
 
 exports.createTemplateForHtml = async (req, res) => {
     try {
-        const { templateName, htmlTemplate, fields } = req.body;
+        const { templateName, htmlTemplate, fields, company } = req.body;
 
         let finalData = {
             templateName,
             htmlTemplate,
             fields,
+            company
         };
 
         const createTemplate = await TemplateSchema.create(finalData);
@@ -149,255 +146,255 @@ const mergeStampAndBase64ToPdf = async (base64Buffer) => {
     }
 };
 
-exports.htmlToPdf = async (req, res, funcData) => {
-    try {
-        const { data } = req.body;
+// exports.htmlToPdf = async (req, res, funcData) => {
+//     try {
+//         const { data } = req.body;
 
-        let htmlData =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[0].htmlTemplate
-                : data[0].htmlTemplate;
-        let fieldsData =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[0].fields
-                : data[0].fields;
-        let assetID =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[1]
-                : data[1];
-        let assetData = await DFMasterSchema.findById(assetID);
-        let empData =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[2]
-                : data[2];
-        let oldCustId =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[3]
-                : data[3];
-        let stamp =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[4]
-                : data[4];
-        let aadharData =
-            funcData && typeof funcData == "object" && funcData.length > 0
-                ? funcData[5]
-                : data[5];
+//         let htmlData =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[0].htmlTemplate
+//                 : data[0].htmlTemplate;
+//         let fieldsData =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[0].fields
+//                 : data[0].fields;
+//         let assetID =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[1]
+//                 : data[1];
+//         let assetData = await DFMasterSchema.findById(assetID);
+//         let empData =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[2]
+//                 : data[2];
+//         let oldCustId =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[3]
+//                 : data[3];
+//         let stamp =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[4]
+//                 : data[4];
+//         let aadharData =
+//             funcData && typeof funcData == "object" && funcData.length > 0
+//                 ? funcData[5]
+//                 : data[5];
 
-        const findCustomerData = await EmployeeSchema.findOne({
-            empCode: empData.empCode,
-        });
+//         const findCustomerData = await EmployeeSchema.findOne({
+//             empCode: empData.empCode,
+//         });
 
-        const replacementMap = {
-            "{Dealer_Name}": "{name}",
-            "{Dealer_Code}": "{empCode}",
-            "{CIN}": "CIN",
-            "{FSSAI_License}": "FSSAI_License",
-            "{Person_Name}": "Person_Name",
-            "{Agreement_Period}": "Agreement_Period",
-            "{Agreement_End_Date_}": "Agreement_End_Date_",
-            "{Vendor_Sr_No}": "{assetSerialNumber}",
-            "{Warranty_Period}": "Warranty_Period",
-            "{Deposit_Value}": "Deposit_Value",
-            "{Machine_Transfer_Date}": "Machine_Transfer_Date",
-            "{Adhar_DOB}": "Adhar_DOB",
-        };
+//         const replacementMap = {
+//             "{Dealer_Name}": "{name}",
+//             "{Dealer_Code}": "{empCode}",
+//             "{CIN}": "CIN",
+//             "{FSSAI_License}": "FSSAI_License",
+//             "{Person_Name}": "Person_Name",
+//             "{Agreement_Period}": "Agreement_Period",
+//             "{Agreement_End_Date_}": "Agreement_End_Date_",
+//             "{Vendor_Sr_No}": "{assetSerialNumber}",
+//             "{Warranty_Period}": "Warranty_Period",
+//             "{Deposit_Value}": "Deposit_Value",
+//             "{Machine_Transfer_Date}": "Machine_Transfer_Date",
+//             "{Adhar_DOB}": "Adhar_DOB",
+//         };
 
-        const originalDate = new Date();
-        const monthNames = [
-            "Jan",
-            "Feb",
-            "Mar",
-            "Apr",
-            "May",
-            "Jun",
-            "Jul",
-            "Aug",
-            "Sep",
-            "Oct",
-            "Nov",
-            "Dec",
-        ];
+//         const originalDate = new Date();
+//         const monthNames = [
+//             "Jan",
+//             "Feb",
+//             "Mar",
+//             "Apr",
+//             "May",
+//             "Jun",
+//             "Jul",
+//             "Aug",
+//             "Sep",
+//             "Oct",
+//             "Nov",
+//             "Dec",
+//         ];
 
-        function isValidDate(dateString) {
-            // Split the date string based on common delimiters
-            let dateParts;
-            if (dateString !== "Invalid date") {
-                dateParts = dateString.split(/[./-]/);
+//         function isValidDate(dateString) {
+//             // Split the date string based on common delimiters
+//             let dateParts;
+//             if (dateString !== "Invalid date") {
+//                 dateParts = dateString.split(/[./-]/);
 
-                if (dateParts[2] >= 1 && dateParts[2] <= 99) {
-                    dateParts[2] = "20" + dateParts[2];
-                } else {
-                    // Handle out of range input
-                    // console.log("Year out of range");
-                }
-            }
+//                 if (dateParts[2] >= 1 && dateParts[2] <= 99) {
+//                     dateParts[2] = "20" + dateParts[2];
+//                 } else {
+//                     // Handle out of range input
+//                     // console.log("Year out of range");
+//                 }
+//             }
 
-            return dateParts.join("/");
-        }
+//             return dateParts.join("/");
+//         }
 
-        const day = originalDate.getDate().toString().padStart(2, "0");
-        const monthOld = (originalDate.getMonth() + 1).toString().padStart(2, "0");
-        const month = monthNames[originalDate.getMonth()];
-        const year = originalDate.getFullYear().toString();
+//         const day = originalDate.getDate().toString().padStart(2, "0");
+//         const monthOld = (originalDate.getMonth() + 1).toString().padStart(2, "0");
+//         const month = monthNames[originalDate.getMonth()];
+//         const year = originalDate.getFullYear().toString();
 
-        let formattedDate = `${day}/${month}/${year}`;
-        let formattedDateForStart = `${day}/${monthOld}/${year}`;
+//         let formattedDate = `${day}/${month}/${year}`;
+//         let formattedDateForStart = `${day}/${monthOld}/${year}`;
 
-        // Formatting invoice date
-        const parsedDate = moment(assetData.invoiceDate, "DD/MM/YYYY").format(
-            "MM/DD/YYYY"
-        );
+//         // Formatting invoice date
+//         const parsedDate = moment(assetData.invoiceDate, "DD/MM/YYYY").format(
+//             "MM/DD/YYYY"
+//         );
 
-        let oldDate = parsedDate;
+//         let oldDate = parsedDate;
 
-        // Formatting parsedDate
-        const givenDate = oldDate && moment(oldDate, "MM/DD/YYYY");
+//         // Formatting parsedDate
+//         const givenDate = oldDate && moment(oldDate, "MM/DD/YYYY");
 
-        let futureFormattedDate = givenDate.add(5, "years");
+//         let futureFormattedDate = givenDate.add(5, "years");
 
-        let warrantyStart = isValidDate(assetData.vendorWarrantyStart);
-        let warrantyEnd = isValidDate(assetData.vendorWarrantyEnd);
+//         let warrantyStart = isValidDate(assetData.vendorWarrantyStart);
+//         let warrantyEnd = isValidDate(assetData.vendorWarrantyEnd);
 
-        let warrantStartDate =
-            warrantyStart &&
-                moment(warrantyStart, "DD/MM/YYYY").format("DD/MMM/YYYY") !==
-                "Invalid date"
-                ? moment(warrantyStart, "DD/MM/YYYY").format("DD/MMM/YYYY")
-                : "";
-        let warrantEndDate =
-            warrantyEnd &&
-                moment(warrantyEnd, "DD/MM/YYYY").format("DD/MMM/YYYY") !== "Invalid date"
-                ? moment(warrantyEnd, "DD/MM/YYYY").format("DD/MMM/YYYY")
-                : "";
+//         let warrantStartDate =
+//             warrantyStart &&
+//                 moment(warrantyStart, "DD/MM/YYYY").format("DD/MMM/YYYY") !==
+//                 "Invalid date"
+//                 ? moment(warrantyStart, "DD/MM/YYYY").format("DD/MMM/YYYY")
+//                 : "";
+//         let warrantEndDate =
+//             warrantyEnd &&
+//                 moment(warrantyEnd, "DD/MM/YYYY").format("DD/MMM/YYYY") !== "Invalid date"
+//                 ? moment(warrantyEnd, "DD/MM/YYYY").format("DD/MMM/YYYY")
+//                 : "";
 
-        // Add 2 years to the current date
+//         // Add 2 years to the current date
 
-        let startDate =
-            formattedDateForStart && formattedDateForStart !== "Invalid date"
-                ? moment(formattedDateForStart, "DD/MM/YYYY")
-                : 1;
-        let endDate = futureFormattedDate
-            ? moment(futureFormattedDate, "DD/MM/YYYY")
-            : 1;
+//         let startDate =
+//             formattedDateForStart && formattedDateForStart !== "Invalid date"
+//                 ? moment(formattedDateForStart, "DD/MM/YYYY")
+//                 : 1;
+//         let endDate = futureFormattedDate
+//             ? moment(futureFormattedDate, "DD/MM/YYYY")
+//             : 1;
 
-        // Calculate the difference in months
-        let monthsDiff = endDate.diff(startDate, "months");
+//         // Calculate the difference in months
+//         let monthsDiff = endDate.diff(startDate, "months");
 
-        // Add 1 day in endDate
-        const nextDay = endDate && endDate.add(1, "days");
-        const resultDateString = nextDay.format("DD/MMM/YYYY");
+//         // Add 1 day in endDate
+//         const nextDay = endDate && endDate.add(1, "days");
+//         const resultDateString = nextDay.format("DD/MMM/YYYY");
 
-        let checkDate = isValidDate(assetData.vendorWarrantyEnd);
+//         let checkDate = isValidDate(assetData.vendorWarrantyEnd);
 
-        let unMappedFields = {
-            Execution_Date: formattedDate,
-            Legal_Entity: "Proprietor/ partnership",
-            CIN: "",
-            FSSAI_License: "",
-            Agreement_Period: `From: ${formattedDate ? formattedDate : ""} To: ${futureFormattedDate && futureFormattedDate !== "Invalid date"
-                    ? moment(futureFormattedDate).format("DD/MMM/YYYY")
-                    : ""
-                } `,
-            Agreement_End_Date_:
-                futureFormattedDate && futureFormattedDate !== "Invalid date"
-                    ? moment(futureFormattedDate).format("DD/MMM/YYYY")
-                    : "",
-            Warranty_Period: warrantStartDate
-                ? `From: ${warrantStartDate} To: ${warrantEndDate} `
-                : "",
-            Deposit_Value: !Number.isNaN(monthsDiff)
-                ? (assetData?.depositAmount / monthsDiff).toFixed(2)
-                : "",
-            Machine_Transfer_Date:
-                resultDateString && resultDateString !== "Invalid date"
-                    ? resultDateString
-                    : "",
-            Adhar_DOB: aadharData.birth,
-            Person_Name: aadharData.name,
-            Adhar_Number: aadharData.adhar,
-        };
+//         let unMappedFields = {
+//             Execution_Date: formattedDate,
+//             Legal_Entity: "Proprietor/ partnership",
+//             CIN: "",
+//             FSSAI_License: "",
+//             Agreement_Period: `From: ${formattedDate ? formattedDate : ""} To: ${futureFormattedDate && futureFormattedDate !== "Invalid date"
+//                     ? moment(futureFormattedDate).format("DD/MMM/YYYY")
+//                     : ""
+//                 } `,
+//             Agreement_End_Date_:
+//                 futureFormattedDate && futureFormattedDate !== "Invalid date"
+//                     ? moment(futureFormattedDate).format("DD/MMM/YYYY")
+//                     : "",
+//             Warranty_Period: warrantStartDate
+//                 ? `From: ${warrantStartDate} To: ${warrantEndDate} `
+//                 : "",
+//             Deposit_Value: !Number.isNaN(monthsDiff)
+//                 ? (assetData?.depositAmount / monthsDiff).toFixed(2)
+//                 : "",
+//             Machine_Transfer_Date:
+//                 resultDateString && resultDateString !== "Invalid date"
+//                     ? resultDateString
+//                     : "",
+//             Adhar_DOB: aadharData.birth,
+//             Person_Name: aadharData.name,
+//             Adhar_Number: aadharData.adhar,
+//         };
 
-        fieldsData.forEach((element) => {
-            let getTempVar = element;
-            let newTempVar = replacementMap[getTempVar];
+//         fieldsData.forEach((element) => {
+//             let getTempVar = element;
+//             let newTempVar = replacementMap[getTempVar];
 
-            let assetDataFromArray = assetData._doc;
+//             let assetDataFromArray = assetData._doc;
 
-            let combineObject = {
-                ...assetDataFromArray,
-                ...findCustomerData._doc,
-                ...unMappedFields,
-            };
+//             let combineObject = {
+//                 ...assetDataFromArray,
+//                 ...findCustomerData._doc,
+//                 ...unMappedFields,
+//             };
 
-            if (newTempVar !== undefined) {
-                let changeData = newTempVar.replace("{", "").replace("}", "");
+//             if (newTempVar !== undefined) {
+//                 let changeData = newTempVar.replace("{", "").replace("}", "");
 
-                htmlData = htmlData.replaceAll(
-                    element,
-                    combineObject[changeData] == undefined ||
-                        combineObject[changeData] == ""
-                        ? element
-                        : combineObject[changeData]
-                );
-            } else {
-                htmlData = htmlData.replaceAll(element, getTempVar);
-            }
-        });
+//                 htmlData = htmlData.replaceAll(
+//                     element,
+//                     combineObject[changeData] == undefined ||
+//                         combineObject[changeData] == ""
+//                         ? element
+//                         : combineObject[changeData]
+//                 );
+//             } else {
+//                 htmlData = htmlData.replaceAll(element, getTempVar);
+//             }
+//         });
 
-        let removeMergeField = htmlData?.replaceAll(/MERGEFIELD\s+\w+\s*/g, "");
+//         let removeMergeField = htmlData?.replaceAll(/MERGEFIELD\s+\w+\s*/g, "");
 
-        const htmlContent = `
-      <html>
-        <head>
-          <style>
-            * {
-              margin: 0;
-              padding: 0;
-              box-sizing: border-box;
-            }
-            body {
-              width: 100%;
-              overflow: auto;
-              word-wrap: break-word;
-              padding: 1.5rem;
-            }
-          </style>
-        </head>
-        <body>
-          ${removeMergeField}
-        </body>
-      </html>
-    `;
+//         const htmlContent = `
+//       <html>
+//         <head>
+//           <style>
+//             * {
+//               margin: 0;
+//               padding: 0;
+//               box-sizing: border-box;
+//             }
+//             body {
+//               width: 100%;
+//               overflow: auto;
+//               word-wrap: break-word;
+//               padding: 1.5rem;
+//             }
+//           </style>
+//         </head>
+//         <body>
+//           ${removeMergeField}
+//         </body>
+//       </html>
+//     `;
 
-        if (!htmlData) {
-            return res.status(400).json({ error: "htmlContent is required" });
-        }
+//         if (!htmlData) {
+//             return res.status(400).json({ error: "htmlContent is required" });
+//         }
 
-        const pdfBuffer = await convertHtmlToPdf(htmlContent);
+//         const pdfBuffer = await convertHtmlToPdf(htmlContent);
 
-        let finalBase64;
+//         let finalBase64;
 
-        if (stamp == "yes") {
-            finalBase64 = await mergeStampAndBase64ToPdf(pdfBuffer);
-        } else {
-            finalBase64 = pdfBuffer.toString("base64");
-        }
+//         if (stamp == "yes") {
+//             finalBase64 = await mergeStampAndBase64ToPdf(pdfBuffer);
+//         } else {
+//             finalBase64 = pdfBuffer.toString("base64");
+//         }
 
-        if (funcData && typeof funcData == "object" && funcData.length > 0) {
-            return finalBase64;
-        }
+//         if (funcData && typeof funcData == "object" && funcData.length > 0) {
+//             return finalBase64;
+//         }
 
-        res.setHeader("Content-Type", "application/pdf");
-        res.setHeader("Content-Disposition", "attachment; filename=output.pdf");
+//         res.setHeader("Content-Type", "application/pdf");
+//         res.setHeader("Content-Disposition", "attachment; filename=output.pdf");
 
-        return res.status(200).json({
-            base64: finalBase64,
-            success: true,
-        });
-    } catch (error) {
-        return res.status(400).json(error);
-    }
-};
+//         return res.status(200).json({
+//             base64: finalBase64,
+//             success: true,
+//         });
+//     } catch (error) {
+//         return res.status(400).json(error);
+//     }
+// };
 
 exports.getTemplateById = async (req, res) => {
     try {
@@ -408,5 +405,38 @@ exports.getTemplateById = async (req, res) => {
         return res.status(200).json({ success: true, data: templateData });
     } catch (error) {
         console.log(error);
+    }
+};
+
+exports.searchTemplates = async (req, res) => {
+    try {
+        const { userId } = req
+        const { search } = req.body;
+        const limit = 5;
+
+        const userData = await UserSchema.findById(userId)
+
+        // for searching
+        let findObject = { company: new mongoose.Types.ObjectId(userData.company) };
+        if (search) {
+            findObject.$or = [
+                { templateName: { $regex: search.trim(), $options: "i" } },
+            ];
+        }
+
+        const templateData = await TemplateSchema.find(findObject)
+            .sort({
+                createdAt: -1,
+            })
+            .limit(limit)
+            .lean()
+            .exec();
+
+        return res.status(200).json({
+            error: false,
+            data: templateData,
+        });
+    } catch (error) {
+        return res.status(400).json({ error: true, message: error.message });
     }
 };

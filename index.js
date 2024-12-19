@@ -37,6 +37,7 @@ app.use("/api/company", require("./routes/company"));
 app.use("/api/employee", require("./routes/employee"));
 app.use("/api/document", require("./routes/document"));
 app.use("/api/dashboard", require("./routes/dashboard"));
+app.use("/api/template", require("./routes/template"));
 
 app.listen(PORT, () => {
   console.log(`Backend run on port ${PORT}`);

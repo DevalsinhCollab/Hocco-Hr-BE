@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 const Template = new mongoose.Schema(
   {
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'company',
+    },
     templateName: {
       type: String,
       trim: true,
