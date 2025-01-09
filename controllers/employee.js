@@ -172,8 +172,7 @@ exports.createmultiemployees = async (req, res) => {
 
 exports.createEmployee = async (req, res) => {
   try {
-    const { company, name, email, empCode, phone, cc, location, adhar, birth, gender } = req.body;
-
+    const { empCode, phone } = req.body
     const isExist = await EmployeeSchema.find({ empCode });
 
     if (isExist && isExist.length > 0) {
@@ -183,7 +182,7 @@ exports.createEmployee = async (req, res) => {
       });
     }
 
-    const newEmployee = await EmployeeSchema.create({ company, name, email, empCode, phone, cc, location, adhar, birth, gender })
+    const newEmployee = await EmployeeSchema.create(req.body)
 
 
     if (phone && !phoneNumberRegex.test(phone)) {
@@ -231,6 +230,9 @@ exports.getEmployees = async (req, res) => {
         { status: { $regex: search.trim(), $options: "i" } },
         { signStatus: { $regex: search.trim(), $options: "i" } },
         { location: { $regex: search.trim(), $options: "i" } },
+        { adhar: { $regex: search.trim(), $options: "i" } },
+        { gender: { $regex: search.trim(), $options: "i" } },
+        { birth: { $regex: search.trim(), $options: "i" } },
       ];
     }
 
@@ -286,7 +288,7 @@ exports.deleteEmployee = async (req, res) => {
 exports.updateEmployee = async (req, res) => {
   try {
     const { id } = req.params;
-    const { company, name, email, empCode, phone, cc, location, adhar, birth, gender } = req.body;
+    const { name, empCode, phone } = req.body;
 
     if (phone && !phoneNumberRegex.test(phone)) {
       return res.status(200).json({
@@ -295,7 +297,7 @@ exports.updateEmployee = async (req, res) => {
       });
     }
 
-    const updatedEmployee = await EmployeeSchema.findByIdAndUpdate(id, { company, name, email, empCode, phone, cc, location, adhar, birth, gender }, { new: true });
+    const updatedEmployee = await EmployeeSchema.findByIdAndUpdate(id, req.body, { new: true });
 
     await DocumentSchema.updateMany({ empCode }, { empName: name, empCode });
 
@@ -310,7 +312,7 @@ exports.updateEmployee = async (req, res) => {
   }
 }
 
-exports.getEmployeesById = async (req, res) => {
+exports.getEmployeeById = async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -410,5 +412,35 @@ exports.searchEmployees = async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({ error: true, message: error.message });
+  }
+};
+
+exports.getLatestEmployees = async (req, res) => {
+  try {
+    const { userId } = req
+    const {
+      pageSize = 5,
+    } = req.query;
+
+
+    const userData = await UserSchema.findById(userId)
+
+    let findObject = { isDelete: "0", company: new mongoose.Types.ObjectId(userData.company) };
+
+    const users = await EmployeeSchema.find(findObject)
+      .sort({ createdAt: -1 })
+      .populate("company")
+      .limit(pageSize)
+      .lean()
+      .exec();
+
+
+    return res.status(200).json({
+      data: users,
+      message: "Employee Data Get Successfully",
+      error: false,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 };
