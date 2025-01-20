@@ -85,12 +85,12 @@ async function processSignedDocument(item) {
       if (base64Data) {
         docLink = await base64ToS3(base64Data, {
           _id: item._id,
-          empCode: item.empCode,
+          code: item.empCode,
         });
       } else {
         docLink = await base64ToS3(item.document, {
           _id: item._id,
-          empCode: item.empCode,
+          code: item.empCode,
         });
       }
 

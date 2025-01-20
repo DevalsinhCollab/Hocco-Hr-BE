@@ -81,12 +81,12 @@ async function processSignedAgreement(item) {
       if (base64Data) {
         docLink = await base64ToS3(base64Data, {
           _id: item._id,
-          custCode: item.custCode,
+          code: item.custCode,
         });
       } else {
         docLink = await base64ToS3(item.documentBase64, {
           _id: item._id,
-          custCode: item.custCode,
+          code: item.custCode,
         });
       }
 

@@ -23,9 +23,9 @@ exports.base64ToS3 = async (
 
   const fileBuffer = Buffer.from(base64Data, "base64");
 
-  const { _id, empCode } = fileNameData;
+  const { _id, code } = fileNameData;
 
-  let fileName = `${_id}_${empCode}_${Date.now().toString()}.pdf`;
+  let fileName = `${_id}_${code}_${Date.now().toString()}.pdf`;
 
   const params = {
     Bucket: process.env.AWS_BUCKET_NAME,
@@ -42,7 +42,7 @@ exports.base64ToS3 = async (
       console.log(
         `Uploaded: ${progress.loaded} of ${progress.total} bytes (${Math.round(
           (progress.loaded / progress.total) * 100
-        )}%) for empCode ${empCode}`
+        )}%) for code ${code}`
       );
     });
 

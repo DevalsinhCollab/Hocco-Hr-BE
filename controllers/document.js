@@ -7,7 +7,7 @@ const { default: axios } = require("axios");
 const { default: mongoose } = require("mongoose");
 const { htmlToPdf } = require("./template");
 
-exports.createSignAgreement = async (req, res) => {
+exports.createSignAgreementForHr = async (req, res) => {
     try {
         const {
             empName,
@@ -208,7 +208,7 @@ exports.createSignAgreement = async (req, res) => {
         if (response.data.status != "failure") {
             const docLink = await base64ToS3(documentData, {
                 _id: generateRandomSixDigit(),
-                empCode:
+                code:
                     findEmployeeData &&
                     findEmployeeData.empCode,
             });

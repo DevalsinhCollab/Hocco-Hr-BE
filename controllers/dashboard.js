@@ -1,6 +1,9 @@
 const EmployeeSchema = require("../models/employee")
 const DocumentSchema = require("../models/document")
 const UserSchema = require("../models/user");
+const DFMaster = require("../models/df_master");
+const CustomerSchema = require("../models/customer");
+const AgreementSchema = require("../models/SignAgreementModel");
 const { default: mongoose } = require("mongoose");
 
 exports.getDashboardCount = async (req, res) => {
@@ -37,5 +40,25 @@ exports.getDashboardCount = async (req, res) => {
         });
     } catch (error) {
         return res.status(400).json(error);
+    }
+};
+
+exports.dfDashboard = async (req, res) => {
+    try {
+        let dfData = await DFMaster.countDocuments({}).lean().exec();
+
+        let customerData = await CustomerSchema.countDocuments({}).lean().exec();
+
+        let agreementData = await AgreementSchema.countDocuments({}).lean().exec();
+
+        return res.status(200).json({
+            dfCount: dfData,
+            customerCount: customerData,
+            agreementCount: agreementData,
+            message: "Count fetched successfully",
+            error: false,
+        });
+    } catch (error) {
+        console.log(error, "error=========");
     }
 };

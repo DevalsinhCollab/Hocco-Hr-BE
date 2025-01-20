@@ -24,41 +24,41 @@ exports.createTemplate = async (req, res) => {
     }
 };
 
-exports.getTemplates = async (req, res) => {
-    try {
-        const { userId } = req
-        const {
-            page = 0,
-            pageSize = 10,
-            search,
-        } = req.query;
+// exports.getTemplates = async (req, res) => {
+//     try {
+//         const { userId } = req
+//         const {
+//             page = 0,
+//             pageSize = 10,
+//             search,
+//         } = req.query;
 
-        const userData = await UserSchema.findById(userId)
+//         const userData = await UserSchema.findById(userId)
 
-        const skip = page * pageSize;
+//         const skip = page * pageSize;
 
-        let findObject = { company: new mongoose.Types.ObjectId(userData.company) };
+//         let findObject = { company: new mongoose.Types.ObjectId(userData.company) };
 
-        if (search) {
-            findObject.$or = [
-                { templateName: { $regex: search.trim(), $options: "i" } },
-            ];
-        }
+//         if (search) {
+//             findObject.$or = [
+//                 { templateName: { $regex: search.trim(), $options: "i" } },
+//             ];
+//         }
 
-        const templates = await TemplateSchema.find(findObject).sort({ createdAt: -1 })
-            .populate("company")
-            .skip(skip)
-            .limit(pageSize)
-            .lean()
-            .exec();
+//         const templates = await TemplateSchema.find(findObject).sort({ createdAt: -1 })
+//             .populate("company")
+//             .skip(skip)
+//             .limit(pageSize)
+//             .lean()
+//             .exec();
 
-        const total = await TemplateSchema.countDocuments(findObject);
+//         const total = await TemplateSchema.countDocuments(findObject);
 
-        return res.status(200).json({ data: templates, total, success: true });
-    } catch (error) {
-        return res.status(400).json(error);
-    }
-};
+//         return res.status(200).json({ data: templates, total, success: true });
+//     } catch (error) {
+//         return res.status(400).json(error);
+//     }
+// };
 
 exports.findVarFromTemplateById = async (req, res) => {
     const { dId } = req.params;
@@ -312,18 +312,6 @@ exports.htmlToPdf = async (req, res, data, document) => {
         return finalBase64
     } catch (error) {
         return res.status(400).json(error);
-    }
-};
-
-exports.getTemplateById = async (req, res) => {
-    try {
-        const { id } = req.params;
-
-        let templateData = await TemplateSchema.findById(id).populate("company").lean().exec();
-
-        return res.status(200).json({ success: true, data: templateData });
-    } catch (error) {
-        console.log(error);
     }
 };
 
