@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const DistributorTemplate = new mongoose.Schema(
+const DistributorDocument = new mongoose.Schema(
   {
     custCode: {
       type: String,
     },
     document: {
-      type: String,
+      type: Object,
       trim: true,
     },
     documentId: {
@@ -35,4 +35,4 @@ const DistributorTemplate = new mongoose.Schema(
     timestamps: true,
   }
 );
-module.exports = mongoose.model("DistributorTemplate", DistributorTemplate);
+module.exports = mongoose.model("DistributorDocuments", DistributorDocument);

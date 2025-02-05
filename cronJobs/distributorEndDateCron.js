@@ -2,7 +2,7 @@ const cron = require("node-cron");
 const nodemailer = require("nodemailer");
 const moment = require("moment"); // To handle date comparison
 const DistributorSchema = require("../models/DistributorModel");
-const DistributorTemplate = require("../models/DistributorTemplate");
+const DistributorDocument = require("../models/DistributorDocument");
 
 // Create the transporter for Nodemailer
 const transporter = nodemailer.createTransport({
@@ -98,7 +98,7 @@ async function distributorCronTask() {
       console.log(`Parsed End Date: ${endDate.format("DD/MM/YYYY")}`);
 
       // Fetch the document template
-      let findDocData = await DistributorTemplate.findOne({
+      let findDocData = await DistributorDocument.findOne({
         custCode: item.custCode,
         docType: item.docType,
       });

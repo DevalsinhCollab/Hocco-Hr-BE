@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   empDashboard,
-  dfDashboard,
   disDashboard,
 } = require("../controllers/DashboardController");
 const { authMiddleware } = require("../middleware/auth");

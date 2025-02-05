@@ -1,6 +1,5 @@
 const { default: axios } = require("axios");
 const AssetTrackerModel = require("../models/AssetTrackerModel");
-const AssetSchema = require("../models/AssetTrackerModel");
 const DFMasterSchema = require("../models/df_master");
 const CustomerSchema = require("../models/customer");
 const SignAgreementSchema = require("../models/SignAgreementModel");
@@ -8,7 +7,7 @@ const moment = require("moment");
 
 exports.createMultiAssets = async (req, res) => {
   try {
-    const oldAssets = await AssetSchema.find({});
+    const oldAssets = await AssetTrackerModel.find({});
 
     let existingData = [];
 
@@ -21,7 +20,7 @@ exports.createMultiAssets = async (req, res) => {
     });
 
     if (existingData.length == 0) {
-      const assets = await AssetSchema.insertMany(req.body);
+      const assets = await AssetTrackerModel.insertMany(req.body);
 
       return res.status(200).json({ assets, success: true });
     } else {
@@ -333,5 +332,89 @@ exports.getAgreementByAssetId = async (req, res) => {
     return res.status(200).json({ error: false, data: findAgreementPdf });
   } catch (error) {
     return res.status(400).json(error);
+  }
+};
+
+exports.getLatestAssetTracker = async (req, res) => {
+  try {
+    let pageSize = 5;
+
+    const latestAsset = await AssetTrackerModel.aggregate(
+      [
+        {
+          $group: {
+            _id: "$assetSerialNumber",
+            custCode: { $last: "$custCode" },
+            status: { $last: "$status" },
+            barCode: { $last: "$barCode" },
+            assetSerialNumber: { $last: "$assetSerialNumber" },
+            assetsId: { $last: "$assetsId" },
+            createdAt: { $last: "$createdAt" },
+            updatedAt: { $last: "$updatedAt" },
+            id: { $last: "$_id" },
+          },
+        },
+        {
+          $facet: {
+            groupedData: [
+              { $sort: { createdAt: -1 } },
+              { $limit: Number(pageSize) },
+            ],
+          },
+        },
+      ],
+      { allowDiskUse: true }
+    );
+
+    async function addCustomerNamesAndCheckAgreement(data) {
+      const customerCodes = data.map((item) => item.custCode);
+      const customers = await CustomerSchema.find({
+        custCode: { $in: customerCodes },
+      }).lean();
+
+      const customerMap = customers.reduce((acc, customer) => {
+        acc[customer.custCode] = customer;
+        return acc;
+      }, {});
+
+      // Extract all assetSerialNumber from data
+      const assetSerialNumbers = data.map((item) => item.assetSerialNumber);
+
+      // Query the SignAgreement schema to check if assetSerialNumber exists
+      const signAgreements = await SignAgreementSchema.find({
+        assetSerialNumber: { $in: assetSerialNumbers },
+      }).lean();
+
+      // Create a set of assetSerialNumbers found in SignAgreement
+      const agreementCustAssetsSet = new Set(
+        signAgreements.map(
+          (agreement) => `${agreement.custCode}-${agreement.assetSerialNumber}`
+        )
+      );
+
+      return data.map((item) => ({
+        ...item,
+        custName: customerMap[item.custCode]?.custName || "",
+        tsmVSEName: customerMap[item.custCode]?.tsmVSEName || "",
+        tsmVSEEmail: customerMap[item.custCode]?.tsmVSEEmail || "",
+        asmName: customerMap[item.custCode]?.asmName || "",
+        asmEmail: customerMap[item.custCode]?.asmEmail || "",
+        agreementExists: agreementCustAssetsSet.has(
+          `${item.custCode}-${item.assetSerialNumber}`
+        ), // Check if both custCode and assetSerialNumber exist together
+      }));
+    }
+
+    const result = await addCustomerNamesAndCheckAgreement(
+      latestAsset[0].groupedData
+    );
+
+    return res.status(200).json({
+      data: result,
+      message: "Latest Asset Trackers fetched successfully",
+      error: false,
+    });
+  } catch (error) {
+    return res.status(400).json({ error: error.message });
   }
 };

@@ -1,4 +1,4 @@
-const DistributorTemplate = require("../models/DistributorTemplate");
+const DistributorDocument = require("../models/DistributorDocument");
 const DistributorSchema = require("../models/DistributorModel");
 const { default: axios } = require("axios");
 const nodemailer = require("nodemailer");
@@ -9,7 +9,7 @@ exports.createSignAgreementForCfa = async (req, res) => {
 
     const [findCustomerData, base64Pdf] = await Promise.all([
       DistributorSchema.findOne({ custCode, docType: "cfa" }),
-      DistributorTemplate.findOne({ custCode, docType: "cfa" }),
+      DistributorDocument.findOne({ custCode, docType: "cfa" }),
     ]);
 
     if (!findCustomerData) {
@@ -117,7 +117,7 @@ exports.createSignAgreementForCfa = async (req, res) => {
       const buffer = Buffer.from(base64Pdf.document, "base64");
 
       await Promise.all([
-        DistributorTemplate.updateOne(
+        DistributorDocument.updateOne(
           { custCode: findCustomerData.custCode, docType: "cfa" },
           {
             documentId: response.data.signer_info[0].document_id,
@@ -209,13 +209,13 @@ exports.updateSignAgreementForCfa = async (req, res) => {
     let data;
     let message;
     if (fileName == "" && document == "") {
-      data = await DistributorTemplate.findOneAndDelete({
+      data = await DistributorDocument.findOneAndDelete({
         custCode: custCode,
         docType: "cfa",
       });
       message = "Document removed successfully";
     } else {
-      data = await DistributorTemplate.findOneAndUpdate(
+      data = await DistributorDocument.findOneAndUpdate(
         { custCode: custCode, docType: "cfa" },
         {
           $set: {

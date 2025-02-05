@@ -30,17 +30,7 @@ exports.login = async (req, res) => {
 
     const token = JWT.sign(data, process.env.JWT_SECRET_KEY);
 
-    const otherData = {
-      _id: checkUser._id,
-      name: checkUser.name,
-      email: checkUser.email,
-      company: checkUser.company,
-      userType: checkUser.userType,
-      createdAt: checkUser.createdAt,
-      updatedAt: checkUser.updatedAt,
-    };
-
-    return res.status(200).json({ token, otherData });
+    return res.status(200).json({ token, data: checkUser });
   } catch (error) {
     console.log(error);
   }
@@ -202,6 +192,19 @@ exports.updateUser = async (req, res) => {
 
     return res.status(200).json({ error: false, data: userData, message: "User updated successfully" });
 
+  } catch (error) {
+    console.log(error, "update user error")
+  }
+}
+
+exports.switchCompany = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { userType } = req.body
+
+    const userData = await User.findByIdAndUpdate(id, { userType: userType })
+
+    return res.status(200).json({ error: false, data: userData, message: "Company Switched" });
   } catch (error) {
     console.log(error, "update user error")
   }

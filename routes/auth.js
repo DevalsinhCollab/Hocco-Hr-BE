@@ -8,6 +8,7 @@ const {
   createMultiUsers,
   getuserbytoken,
   updateUser,
+  switchCompany,
 } = require("../controllers/auth");
 
 const router = express.Router();
@@ -20,5 +21,6 @@ router.get("/getuser/:userId", getuser);
 router.post("/updateuseragreement/:userId", updateuseragreement);
 router.post("/getuserbytoken", getuserbytoken);
 router.put("/updateUser/:id", updateUser);
+router.put("/switchCompany/:id", switchCompany);
 
 module.exports = router;

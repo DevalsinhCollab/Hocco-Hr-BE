@@ -37,6 +37,7 @@ app.use("/api/auth", require("./routes/auth"));
 app.use("/api/document", require("./routes/document"));
 app.use("/api/dashboard", require("./routes/dashboard"));
 app.use("/api/Template", require("./routes/TemplateRoute"));
+app.use("/api/Template", require("./routes/template"));
 app.use("/api/aws", require("./routes/aws"));
 
 // hr routes

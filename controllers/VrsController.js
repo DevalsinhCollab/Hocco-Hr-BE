@@ -1,7 +1,7 @@
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const DistributorSchema = require("../models/DistributorModel");
-const DistributorTemplate = require("../models/DistributorTemplate");
+const DistributorDocument = require("../models/DistributorDocument");
 
 const phoneNumberRegex = /^\d{10}$/;
 
@@ -105,11 +105,6 @@ exports.createmultivrs = async (req, res) => {
             );
           }
         } else {
-          let password = "123456";
-          const salt = await bcrypt.genSalt(10);
-          const newPass = await bcrypt.hash(password, salt);
-
-          item.password = newPass;
           item.status = "Pending";
           item.isDelete = "0";
           item.docType = "vrs";
@@ -157,11 +152,25 @@ exports.createmultivrs = async (req, res) => {
 
 exports.getvrs = async (req, res) => {
   try {
-    const { status, signStatus, page = 0, pageSize = 10 } = req.query;
+    const { status, signStatus, page = 0, pageSize = 10, search } = req.query;
 
     const skip = page * pageSize;
 
     let findObject = { isDelete: "0", docType: "vrs" };
+
+    if (search) {
+      findObject.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+        { email: { $regex: search.trim(), $options: "i" } },
+        { custCode: { $regex: search.trim(), $options: "i" } },
+        { status: { $regex: search.trim(), $options: "i" } },
+        { phone: { $regex: search.trim(), $options: "i" } },
+        { adhar: { $regex: search.trim(), $options: "i" } },
+        { birth: { $regex: search.trim(), $options: "i" } },
+        { gender: { $regex: search.trim(), $options: "i" } },
+        { signStatus: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
 
     if (status !== "") {
       findObject.status = status;
@@ -179,7 +188,7 @@ exports.getvrs = async (req, res) => {
 
     async function addDocs(data) {
       const promises = data.map(async (item) => {
-        const findDoc = await DistributorTemplate.findOne({
+        const findDoc = await DistributorDocument.findOne({
           custCode: item.custCode,
           docType: "vrs",
         })
@@ -241,7 +250,7 @@ exports.addDoc = async (req, res) => {
       { new: true }
     );
 
-    await DistributorTemplate.create({
+    await DistributorDocument.create({
       document: document,
       custCode,
       fileName,
@@ -289,9 +298,23 @@ exports.updateVrs = async (req, res) => {
 
 exports.handleVrsExcelDownload = async (req, res) => {
   try {
-    const { status, signStatus } = req.body;
+    const { status, signStatus, search } = req.body;
 
     let findObject = { isDelete: "0", docType: "vrs" };
+
+    if (search) {
+      findObject.$or = [
+        { name: { $regex: search.trim(), $options: "i" } },
+        { email: { $regex: search.trim(), $options: "i" } },
+        { custCode: { $regex: search.trim(), $options: "i" } },
+        { status: { $regex: search.trim(), $options: "i" } },
+        { phone: { $regex: search.trim(), $options: "i" } },
+        { adhar: { $regex: search.trim(), $options: "i" } },
+        { birth: { $regex: search.trim(), $options: "i" } },
+        { gender: { $regex: search.trim(), $options: "i" } },
+        { signStatus: { $regex: search.trim(), $options: "i" } },
+      ];
+    }
 
     if (status !== "") {
       findObject.status = status;

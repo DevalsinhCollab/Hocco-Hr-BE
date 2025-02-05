@@ -18,6 +18,9 @@ const userSchema = mongoose.Schema(
     userType: {
       type: String,
     },
+    isSuperAdmin: {
+      type: Boolean,
+    },
   },
   { timestamps: true }
 );

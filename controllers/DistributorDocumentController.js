@@ -1,4 +1,4 @@
-const DistributorTemplate = require("../models/DistributorTemplate");
+const DistributorDocument = require("../models/DistributorDocument");
 const { default: axios } = require("axios");
 const nodemailer = require("nodemailer");
 const { checkSignedDocs, getDocketInfo } = require("./SignAgreementController");
@@ -9,7 +9,7 @@ exports.getDistDocuments = async (req, res) => {
   const { page = 0, pageSize = 10 } = req.query;
   const skip = page * pageSize;
 
-  const docData = await DistributorTemplate.find()
+  const docData = await DistributorDocument.find()
     .skip(skip)
     .limit(pageSize)
     .sort({ createdAt: -1 });
@@ -36,7 +36,7 @@ exports.getDistDocuments = async (req, res) => {
 
   const usersWithDocs = await addEmployee(docData);
 
-  const docCount = await DistributorTemplate.countDocuments();
+  const docCount = await DistributorDocument.countDocuments();
 
   return res.status(200).json({
     data: usersWithDocs,
@@ -52,7 +52,7 @@ exports.createSignAgreementForDistributor = async (req, res) => {
 
     const [findDistributorData, base64Pdf] = await Promise.all([
       DistributorSchema.findOne({ custCode, docType: "dis" }),
-      DistributorTemplate.findOne({ custCode, docType: "dis" }),
+      DistributorDocument.findOne({ custCode, docType: "dis" }),
     ]);
 
     if (!findDistributorData) {
@@ -195,7 +195,7 @@ exports.createSignAgreementForDistributor = async (req, res) => {
       const buffer = Buffer.from(base64Pdf.document, "base64");
 
       await Promise.all([
-        DistributorTemplate.updateOne(
+        DistributorDocument.updateOne(
           { custCode: findDistributorData.custCode, docType: "dis" },
           {
             documentId: response.data.signer_info[0].document_id,
@@ -279,7 +279,7 @@ exports.createSignAgreementForDistributor = async (req, res) => {
 
 exports.checkPdfSignStatusDistributor = async (req, res) => {
   try {
-    const docData = await DistributorTemplate.find({ signStatus: "Unsigned" })
+    const docData = await DistributorDocument.find({ signStatus: "Unsigned" })
       .lean()
       .exec();
 
@@ -299,7 +299,7 @@ exports.checkPdfSignStatusDistributor = async (req, res) => {
           item.docketId
         );
 
-        let data = await DistributorTemplate.findOneAndUpdate(
+        let data = await DistributorDocument.findOneAndUpdate(
           { documentId: item.documentId },
           {
             document: getNewBase64Data?.docket_Info[0].content,
@@ -342,13 +342,13 @@ exports.updateSignAgreementForDistributor = async (req, res) => {
     let data;
     let message;
     if (fileName == "" && document == "") {
-      data = await DistributorTemplate.findOneAndDelete({
+      data = await DistributorDocument.findOneAndDelete({
         custCode: custCode,
         docType: "dis",
       });
       message = "Document removed successfully";
     } else {
-      data = await DistributorTemplate.findOneAndUpdate(
+      data = await DistributorDocument.findOneAndUpdate(
         { custCode: custCode, docType: "dis" },
         {
           $set: {
@@ -395,7 +395,7 @@ exports.expiredDocuments = async (req, res) => {
 
     async function addDocs(data) {
       const promises = data.map(async (item) => {
-        const findDoc = await DistributorTemplate.findOne({
+        const findDoc = await DistributorDocument.findOne({
           custCode: item.custCode,
           docType: "dis",
         })
@@ -442,7 +442,7 @@ exports.nearExpiryDocuments = async (req, res) => {
 
     async function addDocs(data) {
       const promises = data.map(async (item) => {
-        const findDoc = await DistributorTemplate.findOne({
+        const findDoc = await DistributorDocument.findOne({
           custCode: item.custCode,
           docType: "dis",
         })

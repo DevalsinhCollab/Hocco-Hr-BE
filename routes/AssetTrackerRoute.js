@@ -7,6 +7,7 @@ const {
   assetRelease,
   getAssetsBySerialNumber,
   getAgreementByAssetId,
+  getLatestAssetTracker,
 } = require("../controllers/AssetTrackerController");
 const { authMiddleware } = require("../middleware/auth");
 
@@ -18,5 +19,6 @@ router.post("/assetAgreement", assetAgreement);
 router.post("/assetRelease", authMiddleware, assetRelease);
 router.get("/getAssetsBySerialNumber", authMiddleware, getAssetsBySerialNumber);
 router.get("/getAgreementByAssetId/:id", authMiddleware, getAgreementByAssetId);
+router.get("/getLatestAssetTracker", authMiddleware, getLatestAssetTracker);
 
 module.exports = router;

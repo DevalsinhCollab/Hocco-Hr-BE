@@ -1,4 +1,4 @@
-const DistributorTemplate = require("../models/DistributorTemplate");
+const DistributorDocument = require("../models/DistributorDocument");
 const DistributorSchema = require("../models/DistributorModel");
 const { default: axios } = require("axios");
 const nodemailer = require("nodemailer");
@@ -9,7 +9,7 @@ exports.createSignAgreementForVrs = async (req, res) => {
 
     const [findCustomerData, base64Pdf] = await Promise.all([
       DistributorSchema.findOne({ custCode, docType: "vrs" }),
-      DistributorTemplate.findOne({ custCode, docType: "vrs" }),
+      DistributorDocument.findOne({ custCode, docType: "vrs" }),
     ]);
 
     if (!findCustomerData) {
@@ -117,7 +117,7 @@ exports.createSignAgreementForVrs = async (req, res) => {
       const buffer = Buffer.from(base64Pdf.document, "base64");
 
       await Promise.all([
-        DistributorTemplate.updateOne(
+        DistributorDocument.updateOne(
           { custCode: findCustomerData.custCode, docType: "vrs" },
           {
             documentId: response.data.signer_info[0].document_id,
@@ -206,13 +206,13 @@ exports.updateSignAgreementForVrs = async (req, res) => {
     let data;
     let message;
     if (fileName == "" && document == "") {
-      data = await DistributorTemplate.findOneAndDelete({
+      data = await DistributorDocument.findOneAndDelete({
         custCode: custCode,
         docType: "vrs",
       });
       message = "Document removed successfully";
     } else {
-      data = await DistributorTemplate.findOneAndUpdate(
+      data = await DistributorDocument.findOneAndUpdate(
         { custCode: custCode, docType: "vrs" },
         {
           $set: {
