@@ -7,7 +7,14 @@ const env = require("dotenv");
 const { setBranchFromGit } = require("./currentBranch");
 const employeeCron = require("./cronJobs/employeeCron");
 
-app.use(cors());
+// Allow requests from your frontend
+const allowedOrigins = ["https://hocco-hr-fe.vercel.app", "http://localhost:5173"];
+
+app.use(cors({
+  origin: allowedOrigins,
+  methods: "GET,POST,PUT,DELETE,OPTIONS",
+  credentials: true, // Allow cookies or authentication headers
+}));
 app.use(express.json({ limit: "500mb" }));
 
 setBranchFromGit();
@@ -31,6 +38,10 @@ connectDB();
 const PORT = process.env.BACKEND_PORT;
 
 // employeeCron()
+
+app.get("/", (req, res) => {
+  res.send("Hello world");
+});
 
 // common routes
 app.use("/api/auth", require("./routes/auth"));
