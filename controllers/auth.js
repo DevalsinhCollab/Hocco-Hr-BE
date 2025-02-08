@@ -2,12 +2,13 @@ const JWT = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/user")
 const { default: axios } = require("axios");
+const CompanySchema = require("../models/company")
 
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const checkUser = await User.findOne({
+    let checkUser = await User.findOne({
       email,
     });
     if (!checkUser) {
@@ -27,6 +28,11 @@ exports.login = async (req, res) => {
     const data = {
       user: checkUser._id,
     };
+
+    if (checkUser && checkUser.userType && checkUser.userType.includes("HR")) {
+      let company = await CompanySchema.find({}).sort({ createdAt: 1 }).limit(1)
+      checkUser = await User.findByIdAndUpdate(checkUser._id, { company: company && company[0] && company[0]._id }, { new: true })
+    }
 
     const token = JWT.sign(data, process.env.JWT_SECRET_KEY);
 
@@ -202,7 +208,16 @@ exports.switchCompany = async (req, res) => {
     const { id } = req.params;
     const { userType } = req.body
 
-    const userData = await User.findByIdAndUpdate(id, { userType: userType })
+    let userData = await User.findByIdAndUpdate(id, { userType: userType }, { new: true })
+
+    if (userType && userType.includes("HR")) {
+      let company = await CompanySchema.find({}).sort({ createdAt: 1 }).limit(1)
+
+      console.log(company, "company===========");
+      
+
+      userData = await User.findByIdAndUpdate(userData._id, { company: company[0]?._id }, { new: true })
+    }
 
     return res.status(200).json({ error: false, data: userData, message: "Company Switched" });
   } catch (error) {
