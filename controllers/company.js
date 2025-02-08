@@ -25,3 +25,15 @@ exports.getCompanies = async (req, res) => {
         return res.status(400).json(error);
     }
 };
+
+exports.getCompanyById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const company = await Company.findById(id).lean().exec();
+
+        return res.status(200).json({ data: company });
+    } catch (error) {
+        return res.status(400).json(error);
+    }
+};
