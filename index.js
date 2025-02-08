@@ -6,6 +6,7 @@ const connectDB = require("./DB/db");
 const env = require("dotenv");
 const { setBranchFromGit } = require("./currentBranch");
 const employeeCron = require("./cronJobs/employeeCron");
+const dfCron = require("./cronJobs/dfCron");
 
 // Allow requests from your frontend
 const allowedOrigins = ["https://hocco-hr-fe.vercel.app", "http://localhost:5173"];
@@ -36,8 +37,6 @@ if (fs.existsSync(envFile)) {
 connectDB();
 
 const PORT = process.env.BACKEND_PORT;
-
-// employeeCron()
 
 app.get("/", (req, res) => {
   res.send("Hello world");
@@ -76,6 +75,9 @@ app.use(
 );
 app.use("/api/cfaDocument", require("./routes/CfaDocumentRoute"));
 app.use("/api/vrsDocument", require("./routes/VrsDocumentRoute"));
+
+dfCron()
+employeeCron()
 
 app.listen(PORT, () => {
   console.log(`Backend run on port ${PORT}`);

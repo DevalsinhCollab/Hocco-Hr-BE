@@ -7,6 +7,7 @@ const pdf = require("html-pdf");
 const Customer = require("../models/customer");
 const UserSchema = require("../models/user");
 const { default: mongoose } = require("mongoose");
+const puppeteer = require("puppeteer")
 
 exports.createTemplate = async (req, res) => {
   try {
@@ -134,29 +135,23 @@ exports.createTemplateForHtml = async (req, res) => {
 
 const convertHtmlToPdf = async (htmlContent) => {
   try {
-    let options = {
-      format: "Letter",
-      header: {
-        height: "0.5in",
-      },
-      footer: {
-        height: "1.3in",
-      },
-      childProcessOptions: {
-        env: {
-          OPENSSL_CONF: "/dev/null",
-        },
-      },
-    };
-    return new Promise((resolve, reject) => {
-      pdf.create(htmlContent, options).toBuffer(function (err, buffer) {
-        if (err) reject(err);
-        // const base64PDF = base64.fromByteArray(buffer);
-        resolve(buffer);
-      });
+    console.log("Starting Puppeteer PDF generation...");
+
+    const browser = await puppeteer.launch({
+                    headless: "new", // Use the new headless mode
+                    args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
+    const page = await browser.newPage();
+
+    await page.setContent(htmlContent, { waitUntil: "load" });
+    const buffer = await page.pdf({ format: "Letter", printBackground: true });
+
+    await browser.close();
+    console.log("Puppeteer PDF generated successfully");
+    return buffer;
   } catch (error) {
-    console.log(error, "convertHtmlToPdf error===============");
+    console.error("convertHtmlToPdf error:", error);
+    throw error;
   }
 };
 
