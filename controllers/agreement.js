@@ -23,9 +23,9 @@ exports.sendAadharLinkViaOtp = async (req, res) => {
     let ourLink;
 
     if (oldCustomerId !== undefined) {
-      ourLink = `http://91.108.104.238/aadharVerify/${radioText}/${custId}/${template}/${assetsId}/${oldCustomerId}`;
+      ourLink = `${process.env.SERVER_LINK}/aadharVerify/${radioText}/${custId}/${template}/${assetsId}/${oldCustomerId}`;
     } else {
-      ourLink = `http://91.108.104.238/aadharVerify/${radioText}/${custId}/${template}/${assetsId}/${0}`;
+      ourLink = `${process.env.SERVER_LINK}/aadharVerify/${radioText}/${custId}/${template}/${assetsId}/${0}`;
     }
 
     const transporter = nodemailer.createTransport({
