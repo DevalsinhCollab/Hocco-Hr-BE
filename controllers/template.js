@@ -195,6 +195,7 @@ exports.htmlToPdf = async (req, res, data, document) => {
 
         const replacementMap = {
             "{empName}": "{name}",
+            "{email}": "{email}",
             "{Designation}": "{designation}",
             "{Salary}": "{salary}",
             "{Salary_PA}": "{salaryPa}",
