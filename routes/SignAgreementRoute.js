@@ -1,7 +1,6 @@
 const express = require("express");
 const {
   createSignAgreement,
-  getAllUnSignAgreement,
   getAllAgreements,
   changeBase64,
   sendAgreementToAsmTsm,
@@ -20,7 +19,6 @@ const { authMiddleware } = require("../middleware/auth");
 const router = express.Router();
 
 router.post("/createSignAgreement", createSignAgreement);
-router.get("/getAllUnSignAgreement", getAllUnSignAgreement);
 router.get("/getAllAgreements", getAllAgreements);
 router.post("/changeBase64", changeBase64);
 router.post("/sendAgreementToAsmTsm", sendAgreementToAsmTsm);

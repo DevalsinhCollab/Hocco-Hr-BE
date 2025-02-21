@@ -21,6 +21,10 @@ const SignAgreement = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    res_reference_id: {
+      type: String,
+      trim: true,
+    },
     res_signer_info: {
       type: Array,
       default: [],

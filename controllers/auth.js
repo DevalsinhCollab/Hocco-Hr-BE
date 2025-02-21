@@ -100,79 +100,6 @@ exports.getuser = async (req, res) => {
   }
 };
 
-exports.updateuseragreement = async (req, res) => {
-  const { userId } = req.params;
-  const agreementName = req.body[0];
-  const eSignAPI = req.body[2].split("base64,")[1];
-  const userData = req.body[1];
-
-  let rendom = Math.floor(Math.random() * 1000 + 1);
-
-  try {
-    const eSign = await axios.post(
-      `${process.env.SIGN_URL}/signRequest`,
-      {
-        reference_id: userData._id,
-        docket_title: "TestSample",
-        documents: [
-          {
-            reference_doc_id: userData._id,
-            content_type: "pdf",
-            content: eSignAPI,
-            signature_sequence: "sequential",
-          },
-        ],
-        signers_info: [
-          {
-            document_to_be_signed: userData._id,
-            trigger_esign_request: true,
-            signer_position: {
-              appearance: [
-                {
-                  x1: 20,
-                  x2: 120,
-                  y1: 20,
-                  y2: 60,
-                },
-              ],
-            },
-            signer_ref_id: userData._id,
-            signer_email: userData["email"],
-            signer_name: userData["ownerName"],
-            sequence: "1",
-            page_number: "1",
-            esign_type: "otp",
-            signer_mobile: userData["ownerContact"],
-            signer_remarks: "eSign Document",
-            authentication_mode: "email",
-            signature_type: "electronic",
-          },
-        ],
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "x-parse-application-id": process.env.APPLICATION_ID,
-          "x-parse-rest-api-key": process.env.APPLICATION_KEY,
-        },
-      }
-    );
-    const docket_id = eSign["data"]["docket_id"];
-    const document_id = eSign["data"]["signer_info"][0]["document_id"];
-    // const agreementStatus = eSign['data']['status'];
-
-    const user = await User.findByIdAndUpdate(userId, {
-      agreementName,
-      docket_id,
-      document_id,
-    });
-
-    return res.status(200).json(user);
-  } catch (error) {
-    return res.status(400).json(error);
-  }
-};
-
 exports.getuserbytoken = async (req, res) => {
   try {
     const { token } = req.body;
@@ -212,9 +139,6 @@ exports.switchCompany = async (req, res) => {
 
     if (userType && userType.includes("HR")) {
       let company = await CompanySchema.find({}).sort({ createdAt: 1 }).limit(1)
-
-      console.log(company, "company===========");
-      
 
       userData = await User.findByIdAndUpdate(userData._id, { company: company[0]?._id }, { new: true })
     }

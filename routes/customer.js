@@ -33,7 +33,6 @@ router.post("/updateSignedAndUnsignedPdf", updateSignedAndUnsignedPdf);
 router.get("/getLatestCustomers", authMiddleware, getLatestCustomers);
 
 // router.get('/getuser/:userId', getuser);
-// router.post('/updateuseragreement/:userId', updateuseragreement);
 // router.post('/geteSignStatus/:userId/:document_id', geteSignStatus);
 
 module.exports = router;

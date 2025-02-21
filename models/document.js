@@ -25,6 +25,10 @@ const Document = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    documentReferenceId: {
+      type: String,
+      trim: true,
+    },
     fileName: {
       type: String,
       trim: true,

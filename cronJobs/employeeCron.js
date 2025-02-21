@@ -9,8 +9,8 @@ const EmployeeSchema = require("../models/employee")
 const transporter = nodemailer.createTransport({
   service: "Hotmail",
   auth: {
-    user: "sales.report@hocco.in",
-    pass: "qfpcfydjfwgvkphq",
+    user: "hr@hocco.in",
+    pass: "fgrnpmhntzhllgqg",
   },
   tls: {
     rejectUnauthorized: false,  // Optional, but may help avoid some issues
@@ -21,9 +21,9 @@ const transporter = nodemailer.createTransport({
 async function sendEmail(subject, text, agreeId, findEmployee) {
 
   const mailOptions = {
-    from: `"No Reply" sales.report@hocco.in`,
-    to: "deval@collabsoftech.com.au",
-    cc: findEmployee && findEmployee.cc.length > 0 && findEmployee.cc || [],
+    from: `"No Reply" hr@hocco.in`,
+    to: "hr@hocco.in",
+    cc: findEmployee && findEmployee.cc.length > 0 && [...findEmployee.cc, "deval@collabsoftech.com.au"] || ["deval@collabsoftech.com.au"],
     subject,
     text,
   };
@@ -50,36 +50,55 @@ async function sendEmail(subject, text, agreeId, findEmployee) {
 // Process and update a signed agreement
 async function processSignedDocument(item) {
   try {
+    // const resData = await axios.post(
+    //   `${process.env.OLD_SIGN_URL}/getSignatureStatus`,
+    //   { document_id: item.documentId },
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "x-parse-application-id": process.env.APPLICATION_ID,
+    //       "x-parse-rest-api-key": process.env.APPLICATION_KEY,
+    //     },
+    //   }
+    // );
+
     const resData = await axios.post(
-      `${process.env.SIGN_URL}/getSignatureStatus`,
-      { document_id: item.documentId },
+      `${process.env.SIGN_URL}/esign/status`,
+      { documentId: item.documentId, documentReferenceId: item.documentReferenceId },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-parse-application-id": process.env.APPLICATION_ID,
-          "x-parse-rest-api-key": process.env.APPLICATION_KEY,
+          "X-API-KEY": process.env.API_KEY,
+          "X-API-APP-ID": process.env.API_APP_ID,
         },
       }
     );
 
-    let checkData = resData && resData.data;
-    const allSignedInfo = checkData?.signer_info?.[0]?.status;
+    let checkData = resData && resData.data && resData.data.data;
 
-    if (allSignedInfo === "signed") {
-      const response = await axios.post(
-        `${process.env.SIGN_URL}/getDocketInfo`,
-        { document_id: item.documentId, docket_id: item.docketId },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-parse-application-id": process.env.APPLICATION_ID,
-            "x-parse-rest-api-key": process.env.APPLICATION_KEY,
-          },
-        }
-      );
+    // const allSignedInfo = checkData?.signer_info?.[0]?.status;
+    const allSignedInfo = checkData && checkData.documentStatus;
 
-      const getNewBase64Data = response.data;
-      const base64Data = getNewBase64Data?.docket_Info?.[0]?.content;
+
+
+    if (allSignedInfo === "Signed") {
+      // const response = await axios.post(
+      //   `${process.env.OLD_SIGN_URL}/getDocketInfo`,
+      //   { document_id: item.documentId, docket_id: item.docketId },
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "x-parse-application-id": process.env.APPLICATION_ID,
+      //       "x-parse-rest-api-key": process.env.APPLICATION_KEY,
+      //     },
+      //   }
+      // );
+
+      // const getNewBase64Data = response.data;
+      // const base64Data = getNewBase64Data?.docket_Info?.[0]?.content;
+
+      const base64Data = checkData.content;
+
 
       let docLink;
       if (base64Data) {
@@ -166,7 +185,7 @@ async function processInChunks(data, chunkSize, processFunction) {
 
 // Cron job task
 async function employeeCronTask() {
-  console.log("Cron Job started");
+  console.log("Cron Job started for HR");
 
   try {
     // First part: Process unsigned documents

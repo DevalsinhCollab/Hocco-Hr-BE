@@ -34,61 +34,343 @@ exports.createSignAgreementForHr = async (req, res) => {
         }
 
         // Prepare signRequestPayload based on signType
-        const commonSignerInfo = {
-            document_to_be_signed: randomNo,
-            signer_position: { appearance: [{ x1: 460, x2: 580, y1: 100, y2: 150 }] },
-            signer_ref_id: "23654",
-            signer_email: findEmployeeData.email || "",
-            signer_name: findEmployeeData.name || "",
-            sequence: "1",
-            page_number: "all",
-            esign_type: "otp",
-            signer_mobile: findEmployeeData.phone || "",
-            signer_remarks: "",
-            authentication_mode: "mobile",
-            trigger_esign_request: true,
-            access_type: "otp",
-        };
 
         if (signType === "dsc") {
-            commonSignerInfo.signature_type = "electronic";
+            signRequestPayload = {
+                "referenceId": randomNo,
+                "documentInfo": {
+                    "name": `Agreement Invitation`,
+                    "content": documentData
+                },
+                "sequentialSigning": true,
+                "userInfo": [
+                    {
+                        "name": findEmployeeData && findEmployeeData.name,
+                        "emailId": findEmployeeData && findEmployeeData.email,
+                        "userType": "Signer",
+                        "signatureType": "Electronic",
+                        "electronicOptions": {
+                            "canDraw": true,
+                            "canType": true,
+                            "canUpload": true,
+                            "captureGPSLocation": true,
+                            "capturePhoto": true
+                        },
+                        "expiryDate": "",
+                        "emailReminderDays": "",
+                        "mobileNo": findEmployeeData && findEmployeeData.phone,
+                        "order": 1,
+                        "userReferenceId": randomNo,
+                        "signAppearance": 1,
+                        "pageToBeSigned": 1,
+                        "pageNumber": "1-2-3-4-5-6-7-8-9-10-11-12",
+                        "pageCoordinates": [
+                            {
+                                "pageNumber": 1,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 2,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 3,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 4,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 5,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 6,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 7,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 8,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 9,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 10,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 11,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                        ]
+                    }
+                ],
+                "descriptionForInvitee": "",
+                "finalCopyRecipientsEmailId": "",
+                "responseUrl": ""
+            }
         } else {
-            commonSignerInfo.signature_type = "aadhaar";
-            commonSignerInfo.signer_validation_inputs = {
-                year_of_birth: findEmployeeData.birth,
-                gender: ["male"].includes(findEmployeeData.gender?.toLowerCase()) ? "M" :
-                    ["female"].includes(findEmployeeData.gender?.toLowerCase()) ? "F" : "O",
-                name_as_per_aadhaar: findEmployeeData.name,
-                last_four_digits_of_aadhaar: findEmployeeData?.adhar?.length === 3
-                    ? "0" + findEmployeeData.adhar
-                    : findEmployeeData.adhar,
-            };
+            signRequestPayload = {
+                "referenceId": randomNo,
+                "documentInfo": {
+                    "name": `Agreement Invitation`,
+                    "content": documentData
+                },
+                "sequentialSigning": true,
+                "userInfo": [
+                    {
+                        "name": findEmployeeData && findEmployeeData.name,
+                        "emailId": findEmployeeData && findEmployeeData.email,
+                        "userType": "Signer",
+                        "signatureType": "Aadhaar",
+                        "aadhaarInfo": {
+                            "birthYear": findEmployeeData && findEmployeeData.birth,
+                            "lastFourDigitOfAadhaar": findEmployeeData && findEmployeeData.adhar,
+                            "gender": ["male", "m"].includes(findEmployeeData.gender.toLowerCase())
+                                ? "M"
+                                : ["female", "f"].includes(findEmployeeData.gender.toLowerCase())
+                                    ? "F"
+                                    : "O"
+                        },
+                        "aadhaarOptions": {
+                            "otp": true,
+                            "biometricThumbScan": true,
+                            "irisScan": true,
+                            "face": true
+                        },
+                        "expiryDate": "",
+                        "emailReminderDays": "",
+                        "mobileNo": findEmployeeData && findEmployeeData.phone,
+                        "order": 1,
+                        "userReferenceId": randomNo,
+                        "signAppearance": 1,
+                        "pageToBeSigned": 1,
+                        "pageNumber": "1-2-3-4-5-6-7-8-9-10-11-12",
+                        "pageCoordinates": [
+                            {
+                                "pageNumber": 1,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 2,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 3,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 4,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 5,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 6,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 7,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 8,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 9,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 10,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                            {
+                                "pageNumber": 11,
+                                "pdfCoordinates": [
+                                    {
+                                        "x1": "420",
+                                        "x2": "300",
+                                        "y1": "620",
+                                        "y2": "50"
+                                    }
+                                ]
+                            },
+                        ]
+                    }
+                ],
+                "descriptionForInvitee": "",
+                "finalCopyRecipientsEmailId": "",
+                "responseUrl": ""
+            }
         }
 
-        signRequestPayload = {
-            reference_id: randomNo,
-            docket_title: `Agreement Invitation: ${findEmployeeData.name} (${empCode})`,
-            documents: [
-                {
-                    reference_doc_id: randomNo,
-                    content_type: "pdf",
-                    content: documentData,
-                    signature_sequence: "sequential",
-                },
-            ],
-            signers_info: [commonSignerInfo],
-        };
-
         // Send request to signing API
-        const response = await axios.post(`${process.env.SIGN_URL}/signRequest`, signRequestPayload, {
+        const response = await axios.post(`${process.env.SIGN_URL}/esign/request`, signRequestPayload, {
             headers: {
                 "Content-Type": "application/json",
-                "x-parse-application-id": process.env.APPLICATION_ID,
-                "x-parse-rest-api-key": process.env.APPLICATION_KEY,
+                "X-API-KEY": process.env.API_KEY,
+                "X-API-APP-ID": process.env.API_APP_ID,
             },
         });
 
-        if (response.data.status === "failure") {
+        if (!response.data.success) {
             return res.status(400).json({ success: false, message: "Signing request failed", data: response.data });
         }
 
@@ -105,8 +387,8 @@ exports.createSignAgreementForHr = async (req, res) => {
         // Save document details to database
         const finalData = {
             document: docLink,
-            docketId: response.data.docket_id,
-            documentId: response?.data?.document_id,
+            documentId: response && response.data && response.data.data && response.data.data.documentId,
+            documentReferenceId: response && response.data && response.data.data && response.data.data.documentReferenceId,
             empCode: empCode,
             fileName,
             company: new mongoose.Types.ObjectId(findEmployeeData.company),

@@ -11,7 +11,6 @@ exports.createSignAgreement = async (req, res) => {
   try {
     const {
       assetsId,
-      custId,
       custCode,
       templateId,
       base64Pdf,
@@ -22,93 +21,201 @@ exports.createSignAgreement = async (req, res) => {
     } = req.body;
 
     const findAssetData = await DFMasterSchema.findById(assetsId);
-    const findCustomerData = await CustomerSchema.find({ custCode });
-    // const findCustNewData = await AadharSchema.findOne({ custCode });
-    const findTemplateData = await TemplateSchema.findById(templateId);
+    const findCustomerData = await CustomerSchema.findOne({ custCode });
     const randomNo = Math.ceil(Math.random() * 9999999999).toString();
 
+    // const response = await axios.post(
+    //   `${process.env.SIGN_URL}/signRequest`,
+    //   {
+    //     reference_id: randomNo,
+    //     docket_title: `Deep Freezer Agreement Invitation: ${custCode} - ${
+    //       findCustomerData[0]?.custName
+    //     } - ${findCustomerData[0]?.city ? findCustomerData[0]?.city : ""}`,
+    //     documents: [
+    //       {
+    //         reference_doc_id: randomNo,
+    //         content_type: "pdf",
+    //         content: base64Pdf,
+    //         signature_sequence: "sequential",
+    //       },
+    //     ],
+    //     signers_info: [
+    //       {
+    //         document_to_be_signed: randomNo,
+    //         trigger_esign_request: true,
+    //         signer_position: {
+    //           appearance: [
+    //             {
+    //               x1: 20,
+    //               x2: 120,
+    //               y1: 20,
+    //               y2: 60,
+    //             },
+    //           ],
+    //         },
+    //         signer_ref_id: "23654",
+    //         signer_email:
+    //           findCustomerData && findCustomerData[0]
+    //             ? findCustomerData[0]?.custEmailID
+    //             : "",
+    //         signer_name: "Mitheeel",
+    //         sequence: "1",
+    //         page_number: "all",
+    //         esign_type: "otp",
+    //         signer_mobile:
+    //           findCustomerData && findCustomerData[0]
+    //             ? findCustomerData[0]?.contactPersonMobile
+    //             : "",
+    //         signer_remarks: "",
+    //         authentication_mode: "mobile",
+    //         signer_validation_inputs: {
+    //           year_of_birth: birth,
+    //           gender: gender,
+    //           name_as_per_aadhaar: custName,
+    //           last_four_digits_of_aadhaar:
+    //             adhar && adhar.length == 3 ? "0" + adhar : adhar,
+    //         },
+    //         signature_type: "aadhaar",
+    //         trigger_esign_request: true,
+    //         access_type: "otp",
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
+    //       "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+    //     },
+    //   }
+    // );
+
     const response = await axios.post(
-      `${process.env.SIGN_URL}/signRequest`,
+      `${process.env.SIGN_URL}/esign/request`,
       {
-        reference_id: randomNo,
-        docket_title: `Deep Freezer Agreement Invitation: ${custCode} - ${findCustomerData[0]?.custName
-          } - ${findCustomerData[0]?.city ? findCustomerData[0]?.city : ""}`,
-        documents: [
+        "referenceId": randomNo,
+        "documentInfo": {
+          "name": "DF Agreements",
+          "content": base64Pdf
+        },
+        "sequentialSigning": true,
+        "userInfo": [
           {
-            reference_doc_id: randomNo,
-            content_type: "pdf",
-            content: base64Pdf,
-            signature_sequence: "sequential",
-          },
-        ],
-        signers_info: [
-          {
-            document_to_be_signed: randomNo,
-            trigger_esign_request: true,
-            signer_position: {
-              appearance: [
-                {
-                  x1: 20,
-                  x2: 120,
-                  y1: 20,
-                  y2: 60,
-                },
-              ],
+            "name": custName,
+            "emailId": findCustomerData && findCustomerData.custEmailID,
+            "userType": "Signer",
+            "signatureType": "Aadhaar",
+            "aadhaarInfo": {
+              "birthYear": birth,
+              "lastFourDigitOfAadhaar": adhar && adhar.length == 3 ? "0" + adhar : adhar,
+              "gender": ["male", "m"].includes(gender.toLowerCase())
+                ? "M"
+                : ["female", "f"].includes(gender.toLowerCase())
+                  ? "F"
+                  : "O"
             },
-            signer_ref_id: "23654",
-            signer_email:
-              findCustomerData && findCustomerData[0]
-                ? findCustomerData[0]?.custEmailID
-                : "",
-            signer_name: "Mitheeel",
-            sequence: "1",
-            page_number: "all",
-            esign_type: "otp",
-            signer_mobile:
-              findCustomerData && findCustomerData[0]
-                ? findCustomerData[0]?.contactPersonMobile
-                : "",
-            signer_remarks: "",
-            authentication_mode: "mobile",
-            signer_validation_inputs: {
-              year_of_birth: birth,
-              gender: gender,
-              name_as_per_aadhaar: custName,
-              last_four_digits_of_aadhaar:
-                adhar && adhar.length == 3 ? "0" + adhar : adhar,
+            "aadhaarOptions": {
+              "otp": true,
+              "biometricThumbScan": true,
+              "irisScan": true,
+              "face": true
             },
-            signature_type: "aadhaar",
-            trigger_esign_request: true,
-            access_type: "otp",
-          },
+            "expiryDate": "",
+            "emailReminderDays": "",
+            "mobileNo": findCustomerData && findCustomerData.contactPersonMobile,
+            "order": 1,
+            "userReferenceId": randomNo,
+            "signAppearance": 1,
+            "pageToBeSigned": 1,
+            "pageNumber": "1-2-3-4-5-6-7",
+            "pageCoordinates": [
+              {
+                "pageNumber": 1,
+                "pdfCoordinates": [
+                  {
+                    "x1": "40",
+                    "x2": "300",
+                    "y1": "720",
+                    "y2": "50"
+                  }
+                ]
+              },
+              {
+                "pageNumber": 2,
+                "pdfCoordinates": [
+                  {
+                    "x1": "40",
+                    "x2": "300",
+                    "y1": "720",
+                    "y2": "50"
+                  }
+                ]
+              },
+              {
+                "pageNumber": 3,
+                "pdfCoordinates": [
+                  {
+                    "x1": "40",
+                    "x2": "300",
+                    "y1": "720",
+                    "y2": "50"
+                  }
+                ]
+              },
+              {
+                "pageNumber": 4,
+                "pdfCoordinates": [
+                  {
+                    "x1": "40",
+                    "x2": "300",
+                    "y1": "720",
+                    "y2": "50"
+                  }
+                ]
+              },
+            ]
+          }
         ],
+        "descriptionForInvitee": "",
+        "finalCopyRecipientsEmailId": "",
+        "responseUrl": ""
       },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
-          "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+          "X-API-KEY": process.env.API_KEY,
+          "X-API-APP-ID": process.env.API_APP_ID,
         },
       }
-    );
+    )
 
     if (response.data.status != "failure") {
       const docLink = await base64ToS3(base64Pdf, {
         _id: generateRandomSixDigit(),
         code:
           findCustomerData &&
-          findCustomerData[0] &&
-          findCustomerData[0].custCode,
+          findCustomerData.custCode,
       });
+
+      // let finalData = {
+      //   documentBase64: docLink,
+      //   templateId: templateId,
+      //   assetsId,
+      //   res_docket_id: response.data.docket_id,
+      //   res_document_id: response?.data?.signer_info[0]?.document_id,
+      //   res_signer_info: response.data.signer_info,
+      //   res_resId: response.data.api_response_id,
+      //   custCode: custCode,
+      //   assetSerialNumber: findAssetData.assetSerialNumber,
+      // };
 
       let finalData = {
         documentBase64: docLink,
         templateId: templateId,
         assetsId,
-        res_docket_id: response.data.docket_id,
-        res_document_id: response?.data?.signer_info[0]?.document_id,
-        res_signer_info: response.data.signer_info,
-        res_resId: response.data.api_response_id,
+        res_reference_id: response && response.data && response.data.data && response.data.data.documentReferenceId,
+        res_document_id: response && response.data && response.data.data && response.data.data.documentId,
+        res_signer_info: response && response.data && response.data.data && response.data.data.userInfo,
         custCode: custCode,
         assetSerialNumber: findAssetData.assetSerialNumber,
       };
@@ -118,22 +225,36 @@ exports.createSignAgreement = async (req, res) => {
       return res.status(400).json({ data: response.data, success: false });
     }
   } catch (error) {
+    console.log(error, "error-----------");
+    
     return res.status(400).json(error);
   }
 };
 
-exports.checkSignedDocs = async (documentId, docketId) => {
+exports.checkSignedDocs = async (documentId, documentReferenceId) => {
   try {
     // "66e2adaddd7c76ea2ef8ed99"
 
+    // const response = await axios.post(
+    //   `${process.env.SIGN_URL}/getSignatureStatus`,
+    //   { document_id: documentId },
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
+    //       "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+    //     },
+    //   }
+    // );
+
     const response = await axios.post(
-      `${process.env.SIGN_URL}/getSignatureStatus`,
-      { document_id: documentId },
+      `${process.env.SIGN_URL}/esign/status`,
+      { documentId: documentId, documentReferenceId: documentReferenceId },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
-          "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+          "X-API-KEY": process.env.API_KEY,
+          "X-API-APP-ID": process.env.API_APP_ID,
         },
       }
     );
@@ -161,81 +282,6 @@ exports.getDocketInfo = async (documentId, docketId) => {
     return response.data;
   } catch (error) {
     throw new Error(`Error in getDocketInfo: ${error.message}`);
-  }
-};
-
-exports.getAllUnSignAgreement = async (req, res) => {
-  try {
-    const skip = parseInt(req.query.skip, 10) || 0;
-    const limit = parseInt(req.query.limit, 10) || 1000;
-
-    // Find unsigned agreements and limit/skip the results
-    let signedAgreement = await SignAgreementSchema.find()
-      .skip(skip)
-      .limit(limit)
-      .lean()
-      .exec();
-
-    // Get total count of all documents
-    const total = await SignAgreementSchema.countDocuments({});
-
-    // Initialize array to collect promises for async operations
-    let promises = [];
-
-    // Process each signed agreement asynchronously
-    for (let item of signedAgreement) {
-      promises.push(
-        (async () => {
-          try {
-            // Check signed documents
-            let checkData = await exports.checkSignedDocs(
-              item.res_document_id,
-              item.res_docket_id
-            );
-
-            // Check if all signer info is signed
-            let allSignedInfo = checkData?.signer_info.every(
-              (value) => value.status === "signed"
-            );
-
-            if (allSignedInfo) {
-              // Get new base64 data for signed document
-              let getNewBase64Data = await exports.getDocketInfo(
-                item.res_document_id,
-                item.res_docket_id
-              );
-
-              // Update sign status and documentBase64
-              let signedData = await SignAgreementSchema.findByIdAndUpdate(
-                item._id,
-                {
-                  signStatus: "S",
-                  documentBase64: getNewBase64Data?.docket_Info[0].content,
-                },
-                { new: true }
-              );
-
-              return signedData;
-            }
-          } catch (error) {
-            console.error(
-              `Error processing agreement with _id ${item._id}:`,
-              error
-            );
-          }
-        })()
-      );
-    }
-
-    // Wait for all updates to complete
-    await Promise.all(promises);
-
-    // Respond with data
-    return res
-      .status(200)
-      .json({ data: signedAgreement, total, message: "Done", success: true });
-  } catch (error) {
-    return res.status(400).json({ message: "Error processing request", error });
   }
 };
 

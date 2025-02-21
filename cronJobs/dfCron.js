@@ -9,15 +9,18 @@ const { default: axios } = require("axios");
 const transporter = nodemailer.createTransport({
   service: "Hotmail",
   auth: {
-    user: process.env.DF_EMAIL,
-    pass: process.env.DF_PASS,
+    user: "sales.report@hocco.in",
+    pass: "fgrnpmhntzhllgqg",
+  },
+  tls: {
+    rejectUnauthorized: false,  // Optional, but may help avoid some issues
   },
 });
 
 // Email sending function
 async function sendEmail(to, subject, text, agreeId, findCustomer) {
   const mailOptions = {
-    from: `"No Reply" ${process.env.DF_EMAIL}`,
+    from: `"No Reply" sales.report@hocco.in`,
     to,
     cc: ["harsh.chovatiya@hocco.in", "deval@collabsoftech.com.au"],
     subject,
@@ -46,36 +49,51 @@ async function sendEmail(to, subject, text, agreeId, findCustomer) {
 // Process and update a signed agreement
 async function processSignedAgreement(item) {
   try {
+    // const resData = await axios.post(
+    //   `${process.env.SIGN_URL}/getSignatureStatus`,
+    //   { document_id: item.res_document_id },
+    //   {
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //       "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
+    //       "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+    //     },
+    //   }
+    // );
+
     const resData = await axios.post(
-      `${process.env.SIGN_URL}/getSignatureStatus`,
-      { document_id: item.res_document_id },
+      `${process.env.SIGN_URL}/esign/status`,
+      { documentId: item.res_document_id, documentReferenceId: item.res_reference_id },
       {
         headers: {
           "Content-Type": "application/json",
-          "x-parse-application-id": process.env.APPLICATION_ID,
-          "x-parse-rest-api-key": process.env.APPLICATION_KEY,
+          "X-API-KEY": process.env.API_KEY,
+          "X-API-APP-ID": process.env.API_APP_ID,
         },
       }
     );
 
-    let checkData = resData && resData.data;
-    const allSignedInfo = checkData?.signer_info?.[0]?.status;
+    let checkData = resData && resData.data && resData.data.data;
 
-    if (allSignedInfo === "signed") {
-      const response = await axios.post(
-        `${process.env.SIGN_URL}/getDocketInfo`,
-        { document_id: item.res_document_id, docket_id: item.res_docket_id },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-parse-application-id": process.env.APPLICATION_ID,
-            "x-parse-rest-api-key": process.env.APPLICATION_KEY,
-          },
-        }
-      );
+    // const allSignedInfo = checkData?.signer_info?.[0]?.status;
+    const allSignedInfo = checkData && checkData.documentStatus;
 
-      const getNewBase64Data = response.data;
-      const base64Data = getNewBase64Data?.docket_Info?.[0]?.content;
+    if (allSignedInfo === "Signed") {
+      // const response = await axios.post(
+      //   `${process.env.SIGN_URL}/getDocketInfo`,
+      //   { document_id: item.res_document_id, docket_id: item.res_docket_id },
+      //   {
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       "x-parse-application-id": "collabsoftechpvt.ltd_esign_production",
+      //       "x-parse-rest-api-key": "4174eee2c8d1cd2b89b8e8ddfd221211",
+      //     },
+      //   }
+      // );
+
+      // const getNewBase64Data = response.data;
+      // const base64Data = getNewBase64Data?.docket_Info?.[0]?.content;
+      const base64Data = checkData.content;
 
       let docLink;
       if (base64Data) {
@@ -205,6 +223,7 @@ async function dfCronTask() {
 
 // Cron job scheduler
 function dfCron() {
+  // cron.schedule("*/2 * * * *", dfCronTask); // Runs every 2 minutes
   cron.schedule("0 */2 * * *", dfCronTask); // Runs every 2 hours
 }
 
